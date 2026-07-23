@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TypeForge — Precision Typing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root[data-theme="dark"]{
+    --ink:#12151C;
+    --surface:#1B2029;
+    --surface-2:#232935;
+    --paper:#E8E6E0;
+    --paper-dim:#9AA0AC;
+    --brass:#C9A227;
+    --brass-dim:#8A7220;
+    --ribbon:#C1443B;
+    --line:#2E3542;
+    --shadow: 0 20px 60px rgba(0,0,0,0.45);
+  }
+  :root[data-theme="light"]{
+    --ink:#EDE9DF;
+    --surface:#FFFDF8;
+    --surface-2:#F5F0E4;
+    --paper:#1E1B14;
+    --paper-dim:#6B6455;
+    --brass:#8A6A12;
+    --brass-dim:#B8912A;
+    --ribbon:#A5342B;
+    --line:#DCD4C0;
+    --shadow: 0 20px 60px rgba(0,0,0,0.10);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Space Grotesk', sans-serif;
+    min-height:100vh;
+    transition:background .4s ease, color .4s ease;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'JetBrains Mono', monospace;}
+  .wrap{
+    max-width:920px;
+    margin:0 auto;
+    padding:48px 24px 80px;
+  }
+
+  /* Header */
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:36px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:20px;
+  }
+  .brand-eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.28em;
+    color:var(--brass);
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  .brand-name{
+    font-size:30px;
+    font-weight:700;
+    letter-spacing:-0.02em;
+  }
+  .brand-name span{color:var(--brass);}
+  .header-controls{display:flex; gap:10px;}
+  .icon-btn{
+    width:38px;height:38px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:var(--surface);
+    color:var(--paper-dim);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    font-size:16px;
+    transition:all .15s ease;
+  }
+  .icon-btn:hover{border-color:var(--brass); color:var(--brass);}
+  .icon-btn.active{color:var(--brass); border-color:var(--brass);}
+
+  /* Controls row */
+  .controls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:28px;
+  }
+  .mode-group{display:flex; gap:6px; flex-wrap:wrap;}
+  .mode-btn{
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    padding:8px 14px;
+    border-radius:6px;
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--paper-dim);
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .mode-btn:hover{color:var(--paper);}
+  .mode-btn.active{
+    background:var(--brass);
+    color:var(--ink);
+    border-color:var(--brass);
+    font-weight:600;
+  }
+  .custom-toggle{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--paper-dim);
+    background:none;
+    border:none;
+    text-decoration:underline;
+    text-underline-offset:3px;
+    cursor:pointer;
+  }
+  .custom-toggle:hover{color:var(--brass);}
+
+  .custom-box{display:none; margin-bottom:20px;}
+  .custom-box.show{display:block;}
+  .custom-box textarea{
+    width:100%;
+    min-height:90px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:10px;
+    color:var(--paper);
+    font-family:'JetBrains Mono', monospace;
+    font-size:14px;
+    padding:14px;
+    resize:vertical;
+  }
+  .custom-box button{
+    margin-top:8px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    padding:8px 16px;
+    border-radius:6px;
+    border:1px solid var(--brass);
+    background:transparent;
+    color:var(--brass);
+    cursor:pointer;
+  }
+  .custom-box button:hover{background:var(--brass); color:var(--ink);}
+
+  /* Type stage */
+  .stage{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:40px 36px;
+    box-shadow:var(--shadow);
+    position:relative;
+    min-height:170px;
+  }
+  .caps-warning{
+    position:absolute;
+    top:14px; right:20px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    color:var(--ribbon);
+    display:none;
+  }
+  .caps-warning.show{display:block;}
+
+  .passage{
+    font-family:'JetBrains Mono', monospace;
+    font-size:22px;
+    line-height:1.8;
+    letter-spacing:0.01em;
+    user-select:none;
+  }
+  .passage span{position:relative;}
+  .ch-pending{color:var(--paper-dim);}
+  .ch-correct{color:var(--paper);}
+  .ch-incorrect{color:var(--ribbon); text-decoration:underline; text-decoration-color:var(--ribbon);}
+  .ch-current{
+    background:var(--brass);
+    color:var(--ink);
+    border-radius:2px;
+    animation:pulse 1s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{opacity:1;}
+    50%{opacity:0.55;}
+  }
+
+  .hidden-input{
+    position:absolute;
+    opacity:0;
+    pointer-events:none;
+  }
+
+  .stage-hint{
+    margin-top:20px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11.5px;
+    color:var(--paper-dim);
+    letter-spacing:0.04em;
+  }
+  .stage-hint kbd{
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:1px 6px;
+    color:var(--paper);
+  }
+
+  /* Ledger stat strip */
+  .ledger{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    margin-top:24px;
+    border:1px solid var(--line);
+    border-radius:12px;
+    overflow:hidden;
+  }
+  .ledger .cell{
+    padding:16px 18px;
+    border-right:1px solid var(--line);
+    background:var(--surface);
+  }
+  .ledger .cell:last-child{border-right:none;}
+  .ledger .label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.15em;
+    text-transform:uppercase;
+    color:var(--paper-dim);
+    margin-bottom:6px;
+  }
+  .ledger .value{
+    font-family:'JetBrains Mono', monospace;
+    font-size:26px;
+    font-weight:600;
+  }
+  .ledger .value.accent{color:var(--brass);}
+  .ledger .value.warn{color:var(--ribbon);}
+
+  /* Results — strike sheet */
+  .overlay{
+    display:none;
+    position:fixed; inset:0;
+    background:rgba(0,0,0,0.55);
+    align-items:center;
+    justify-content:center;
+    z-index:50;
+    padding:20px;
+  }
+  .overlay.show{display:flex;}
+  .strike-sheet{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:16px;
+    max-width:600px;
+    width:100%;
+    max-height:88vh;
+    overflow-y:auto;
+    padding:36px;
+    box-shadow:var(--shadow);
+    position:relative;
+  }
+  .strike-sheet::before{
+    content:"";
+    position:absolute;
+    top:0;left:0;right:0;
+    height:6px;
+    background:repeating-linear-gradient(90deg, var(--brass) 0 10px, transparent 10px 20px);
+    border-radius:16px 16px 0 0;
+  }
+  .sheet-title{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.25em;
+    text-transform:uppercase;
+    color:var(--brass-dim);
+    margin-bottom:4px;
+  }
+  .sheet-wpm{
+    font-size:56px;
+    font-weight:700;
+    line-height:1;
+    margin-bottom:2px;
+  }
+  .sheet-wpm span{font-size:18px; color:var(--paper-dim); font-weight:400; margin-left:8px;}
+  .pb-badge{
+    display:inline-block;
+    margin-top:10px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.08em;
+    color:var(--ink);
+    background:var(--brass);
+    padding:4px 10px;
+    border-radius:20px;
+    font-weight:700;
+  }
+  .sheet-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    border-radius:10px;
+    overflow:hidden;
+    margin:22px 0;
+  }
+  .sheet-grid .cell{background:var(--surface); padding:12px 14px;}
+  .sheet-grid .label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:9.5px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--paper-dim);
+    margin-bottom:4px;
+  }
+  .sheet-grid .value{font-family:'JetBrains Mono', monospace; font-size:19px; font-weight:600;}
+
+  .chart-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.15em;
+    text-transform:uppercase;
+    color:var(--paper-dim);
+    margin-bottom:8px;
+  }
+  svg.chart{width:100%; height:110px; overflow:visible;}
+
+  .history{margin-top:26px;}
+  table{width:100%; border-collapse:collapse; font-family:'JetBrains Mono', monospace; font-size:12.5px;}
+  th,td{text-align:left; padding:8px 6px; border-bottom:1px solid var(--line); color:var(--paper-dim);}
+  th{font-size:10px; letter-spacing:0.1em; text-transform:uppercase;}
+  td.hl{color:var(--paper); font-weight:600;}
+
+  .sheet-actions{
+    display:flex; gap:10px; margin-top:26px;
+  }
+  .btn-primary{
+    flex:1;
+    background:var(--brass);
+    color:var(--ink);
+    border:none;
+    border-radius:8px;
+    padding:12px 18px;
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:0.04em;
+    cursor:pointer;
+  }
+  .btn-primary:hover{background:var(--brass-dim);}
+  .btn-ghost{
+    background:transparent;
+    color:var(--paper-dim);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:12px 18px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .btn-ghost:hover{color:var(--paper); border-color:var(--paper-dim);}
+
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+
+  @media (max-width:600px){
+    .passage{font-size:17px; line-height:1.9;}
+    .ledger{grid-template-columns:repeat(2,1fr);}
+    .ledger .cell:nth-child(2){border-right:none;}
+    .sheet-grid{grid-template-columns:repeat(2,1fr);}
+    .sheet-wpm{font-size:44px;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .ch-current{animation:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="brand-eyebrow">PRECISION TYPING TRAINER</div>
+      <div class="brand-name">Type<span>Forge</span></div>
+    </div>
+    <div class="header-controls">
+      <button class="icon-btn" id="soundBtn" title="Toggle keystroke sound">♪</button>
+      <button class="icon-btn" id="themeBtn" title="Toggle theme">◐</button>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="mode-group" id="modeGroup">
+      <button class="mode-btn" data-mode="15">15s</button>
+      <button class="mode-btn active" data-mode="30">30s</button>
+      <button class="mode-btn" data-mode="60">60s</button>
+      <button class="mode-btn" data-mode="120">120s</button>
+    </div>
+    <button class="custom-toggle" id="customToggle">use custom text</button>
+  </div>
+
+  <div class="custom-box" id="customBox">
+    <textarea id="customText" placeholder="Paste or type your own practice passage here…"></textarea>
+    <button id="applyCustom">use this text</button>
+  </div>
+
+  <div class="stage">
+    <div class="caps-warning" id="capsWarning">CAPS LOCK ON</div>
+    <div class="passage mono" id="passage"></div>
+    <input class="hidden-input" id="hiddenInput" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div class="stage-hint">Just start typing to begin · <kbd>Tab</kbd> or <kbd>Enter</kbd> to restart</div>
+  </div>
+
+  <div class="ledger">
+    <div class="cell">
+      <div class="label">WPM</div>
+      <div class="value accent" id="liveWpm">0</div>
+    </div>
+    <div class="cell">
+      <div class="label">Accuracy</div>
+      <div class="value" id="liveAcc">100%</div>
+    </div>
+    <div class="cell">
+      <div class="label">Time</div>
+      <div class="value" id="liveTime">30</div>
+    </div>
+    <div class="cell">
+      <div class="label">Mistakes</div>
+      <div class="value warn" id="liveMistakes">0</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="strike-sheet">
+    <div class="sheet-title">Strike Sheet — Session Result</div>
+    <div class="sheet-wpm" id="resultWpm">0<span>wpm</span></div>
+    <div id="pbBadge"></div>
+
+    <div class="sheet-grid">
+      <div class="cell"><div class="label">Accuracy</div><div class="value" id="resultAcc">0%</div></div>
+      <div class="cell"><div class="label">Mistakes</div><div class="value" id="resultMistakes">0</div></div>
+      <div class="cell"><div class="label">Consistency</div><div class="value" id="resultConsistency">0%</div></div>
+      <div class="cell"><div class="label">Characters</div><div class="value" id="resultChars">0</div></div>
+      <div class="cell"><div class="label">Duration</div><div class="value" id="resultDuration">0s</div></div>
+      <div class="cell"><div class="label">Best WPM</div><div class="value" id="resultBest">0</div></div>
+    </div>
+
+    <div class="chart-label">WPM over time</div>
+    <svg class="chart" id="chartSvg" viewBox="0 0 500 110" preserveAspectRatio="none"></svg>
+
+    <div class="history">
+      <div class="chart-label">Recent sessions</div>
+      <table id="historyTable">
+        <thead><tr><th>When</th><th>Mode</th><th>WPM</th><th>Acc</th></tr></thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+
+    <div class="sheet-actions">
+      <button class="btn-primary" id="tryAgainBtn">Try again</button>
+      <button class="btn-ghost" id="closeBtn">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const PASSAGES = [
+    "The quick brown fox jumps over the lazy dog while the sun sets slowly behind the distant mountains.",
+    "Great things are never done by impulse, they are a series of small things brought together over time.",
+    "Programming is the art of telling another human what one wants the computer to do with total precision.",
+    "In the middle of every difficulty lies opportunity waiting patiently for someone willing to look closer.",
+    "She sells seashells by the seashore, and the shells she sells are seashells for certain, everyone agrees.",
+    "The only way to do great work is to love what you do, and to keep doing it even when it feels difficult.",
+    "A journey of a thousand miles begins with a single step taken deliberately in the right direction.",
+    "Technology is best when it brings people together instead of pulling them further apart from each other.",
+    "Simplicity is the ultimate sophistication, and clarity is often harder to achieve than complexity.",
+    "Success usually comes to those who are too busy looking for it to notice whether or not it arrived."
+  ];
+
+  const state = {
+    mode: 30,
+    text: "",
+    typed: [],
+    idx: 0,
+    startTime: null,
+    timer: null,
+    timeLeft: 30,
+    mistakes: 0,
+    totalKeystrokes: 0,
+    finished: false,
+    wpmSamples: [],
+    soundOn: false,
+    customActive: false
+  };
+
+  const el = {
+    passage: document.getElementById('passage'),
+    hiddenInput: document.getElementById('hiddenInput'),
+    liveWpm: document.getElementById('liveWpm'),
+    liveAcc: document.getElementById('liveAcc'),
+    liveTime: document.getElementById('liveTime'),
+    liveMistakes: document.getElementById('liveMistakes'),
+    capsWarning: document.getElementById('capsWarning'),
+    overlay: document.getElementById('overlay'),
+    resultWpm: document.getElementById('resultWpm'),
+    resultAcc: document.getElementById('resultAcc'),
+    resultMistakes: document.getElementById('resultMistakes'),
+    resultConsistency: document.getElementById('resultConsistency'),
+    resultChars: document.getElementById('resultChars'),
+    resultDuration: document.getElementById('resultDuration'),
+    resultBest: document.getElementById('resultBest'),
+    pbBadge: document.getElementById('pbBadge'),
+    chartSvg: document.getElementById('chartSvg'),
+    historyBody: document.getElementById('historyBody'),
+    themeBtn: document.getElementById('themeBtn'),
+    soundBtn: document.getElementById('soundBtn'),
+    customToggle: document.getElementById('customToggle'),
+    customBox: document.getElementById('customBox'),
+    customText: document.getElementById('customText'),
+    applyCustom: document.getElementById('applyCustom'),
+    modeGroup: document.getElementById('modeGroup'),
+    tryAgainBtn: document.getElementById('tryAgainBtn'),
+    closeBtn: document.getElementById('closeBtn'),
+    stage: document.querySelector('.stage')
+  };
+
+  // ---------- storage ----------
+  function loadJSON(key, fallback){
+    try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+    catch(e){ return fallback; }
+  }
+  function saveJSON(key, val){
+    try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
+  }
+
+  let bestWpm = loadJSON('tf_best', 0);
+  let history = loadJSON('tf_history', []);
+  let theme = loadJSON('tf_theme', 'dark');
+  let soundOn = loadJSON('tf_sound', false);
+
+  document.documentElement.setAttribute('data-theme', theme);
+  el.themeBtn.classList.toggle('active', theme === 'light');
+  state.soundOn = soundOn;
+  el.soundBtn.classList.toggle('active', soundOn);
+
+  // ---------- audio ----------
+  let audioCtx = null;
+  function click(){
+    if(!state.soundOn) return;
+    try{
+      if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = 'square';
+      o.frequency.value = 620 + Math.random()*80;
+      g.gain.value = 0.04;
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.05);
+      o.stop(audioCtx.currentTime + 0.06);
+    }catch(e){}
+  }
+
+  // ---------- passage rendering ----------
+  function pickPassage(){
+    return PASSAGES[Math.floor(Math.random()*PASSAGES.length)];
+  }
+
+  function renderPassage(){
+    el.passage.innerHTML = state.text.split('').map((ch, i) => {
+      let cls = 'ch-pending';
+      if(i < state.typed.length){
+        cls = state.typed[i] === ch ? 'ch-correct' : 'ch-incorrect';
+      } else if(i === state.idx){
+        cls = 'ch-current';
+      }
+      const display = ch === ' ' ? '&nbsp;' : ch;
+      return `<span class="${cls}">${display}</span>`;
+    }).join('');
+  }
+
+  function resetTest(keepMode){
+    clearInterval(state.timer);
+    state.text = state.customActive ? state.customText : pickPassage();
+    state.typed = [];
+    state.idx = 0;
+    state.startTime = null;
+    state.timeLeft = state.mode;
+    state.mistakes = 0;
+    state.totalKeystrokes = 0;
+    state.finished = false;
+    state.wpmSamples = [];
+    el.liveWpm.textContent = '0';
+    el.liveAcc.textContent = '100%';
+    el.liveTime.textContent = state.mode;
+    el.liveMistakes.textContent = '0';
+    el.overlay.classList.remove('show');
+    renderPassage();
+    el.hiddenInput.value = '';
+    el.hiddenInput.focus();
+  }
+
+  // ---------- timing / stats ----------
+  function currentWpm(){
+    if(!state.startTime) return 0;
+    const elapsedMin = (Date.now() - state.startTime) / 60000;
+    if(elapsedMin <= 0) return 0;
+    const correctChars = state.typed.filter((c,i) => c === state.text[i]).length;
+    return Math.round((correctChars/5) / elapsedMin);
+  }
+  function currentAcc(){
+    if(state.totalKeystrokes === 0) return 100;
+    const correct = state.totalKeystrokes - state.mistakes;
+    return Math.max(0, Math.round((correct/state.totalKeystrokes)*100));
+  }
+
+  function startTimerIfNeeded(){
+    if(state.timer) return;
+    state.startTime = Date.now();
+    state.timer = setInterval(() => {
+      state.timeLeft -= 1;
+      const wpm = currentWpm();
+      state.wpmSamples.push(wpm);
+      el.liveTime.textContent = Math.max(0, state.timeLeft);
+      el.liveWpm.textContent = wpm;
+      el.liveAcc.textContent = currentAcc() + '%';
+      el.liveMistakes.textContent = state.mistakes;
+      if(state.timeLeft <= 0){
+        finishTest();
+      }
+    }, 1000);
+  }
+
+  function finishTest(){
+    if(state.finished) return;
+    state.finished = true;
+    clearInterval(state.timer);
+    const wpm = currentWpm();
+    const acc = currentAcc();
+    const mean = state.wpmSamples.length ? state.wpmSamples.reduce((a,b)=>a+b,0)/state.wpmSamples.length : wpm;
+    const variance = state.wpmSamples.length ? state.wpmSamples.reduce((a,b)=>a+Math.pow(b-mean,2),0)/state.wpmSamples.length : 0;
+    const stdev = Math.sqrt(variance);
+    const consistency = mean > 0 ? Math.max(0, Math.round(100 - (stdev/mean)*100)) : 100;
+    const duration = state.mode - Math.max(0, state.timeLeft);
+    const isNewBest = wpm > bestWpm;
+    if(isNewBest) bestWpm = wpm;
+
+    saveJSON('tf_best', bestWpm);
+    history.unshift({
+      when: new Date().toLocaleString(undefined, {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}),
+      mode: state.customActive ? 'custom' : (state.mode + 's'),
+      wpm, acc
+    });
+    history = history.slice(0, 10);
+    saveJSON('tf_history', history);
+
+    showResults({wpm, acc, mistakes: state.mistakes, consistency, chars: state.typed.length, duration, isNewBest});
+  }
+
+  function showResults(r){
+    el.resultWpm.innerHTML = r.wpm + '<span>wpm</span>';
+    el.resultAcc.textContent = r.acc + '%';
+    el.resultMistakes.textContent = r.mistakes;
+    el.resultConsistency.textContent = r.consistency + '%';
+    el.resultChars.textContent = r.chars;
+    el.resultDuration.textContent = r.duration + 's';
+    el.resultBest.textContent = bestWpm;
+    el.pbBadge.innerHTML = r.isNewBest ? '<span class="pb-badge">★ NEW PERSONAL BEST</span>' : '';
+
+    drawChart(state.wpmSamples);
+    renderHistory();
+    el.overlay.classList.add('show');
+  }
+
+  function drawChart(samples){
+    const svg = el.chartSvg;
+    svg.innerHTML = '';
+    if(samples.length < 2){
+      svg.innerHTML = '<text x="250" y="55" fill="var(--paper-dim)" font-size="12" text-anchor="middle" font-family="JetBrains Mono, monospace">not enough data</text>';
+      return;
+    }
+    const w = 500, h = 110, pad = 8;
+    const max = Math.max(...samples, 1);
+    const min = Math.min(...samples, 0);
+    const range = Math.max(max - min, 1);
+    const stepX = (w - pad*2) / (samples.length - 1);
+    const points = samples.map((v,i) => {
+      const x = pad + i*stepX;
+      const y = h - pad - ((v - min)/range)*(h - pad*2);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+
+    const ns = "http://www.w3.org/2000/svg";
+    const poly = document.createElementNS(ns,'polyline');
+    poly.setAttribute('points', points);
+    poly.setAttribute('fill','none');
+    poly.setAttribute('stroke','var(--brass)');
+    poly.setAttribute('stroke-width','2.5');
+    poly.setAttribute('stroke-linejoin','round');
+    poly.setAttribute('stroke-linecap','round');
+    svg.appendChild(poly);
+
+    const fillPoly = document.createElementNS(ns,'polygon');
+    fillPoly.setAttribute('points', `${pad},${h-pad} ${points} ${w-pad},${h-pad}`);
+    fillPoly.setAttribute('fill','var(--brass)');
+    fillPoly.setAttribute('opacity','0.08');
+    svg.insertBefore(fillPoly, poly);
+  }
+
+  function renderHistory(){
+    el.historyBody.innerHTML = history.map(h => `
+      <tr>
+        <td>${h.when}</td>
+        <td>${h.mode}</td>
+        <td class="hl">${h.wpm}</td>
+        <td>${h.acc}%</td>
+      </tr>
+    `).join('') || '<tr><td colspan="4">No sessions yet</td></tr>';
+  }
+
+  // ---------- input handling ----------
+  el.stage.addEventListener('click', () => el.hiddenInput.focus());
+
+  el.hiddenInput.addEventListener('keydown', (e) => {
+    if(e.key === 'CapsLock'){
+      setTimeout(()=> el.capsWarning.classList.toggle('show', e.getModifierState && e.getModifierState('CapsLock')), 0);
+    } else if(e.getModifierState && e.getModifierState('CapsLock')){
+      el.capsWarning.classList.add('show');
+    } else {
+      el.capsWarning.classList.remove('show');
+    }
+
+    if(e.key === 'Tab' || (e.key === 'Enter' && state.finished)){
+      e.preventDefault();
+      resetTest();
+      return;
+    }
+    if(state.finished) return;
+
+    if(e.key === 'Backspace'){
+      e.preventDefault();
+      if(state.typed.length > 0){
+        state.typed.pop();
+        state.idx = state.typed.length;
+        renderPassage();
+      }
+      return;
+    }
+    if(e.key === 'Enter'){ e.preventDefault(); return; }
+    if(e.key.length !== 1) return; // ignore modifier/arrow keys etc.
+
+    e.preventDefault();
+    startTimerIfNeeded();
+    click();
+
+    const target = state.text[state.idx];
+    state.typed.push(e.key);
+    state.totalKeystrokes += 1;
+    if(e.key !== target) state.mistakes += 1;
+    state.idx += 1;
+    renderPassage();
+
+    if(state.idx >= state.text.length){
+      finishTest();
+    }
+  });
+
+  // ---------- controls ----------
+  el.modeGroup.addEventListener('click', (e) => {
+    const btn = e.target.closest('.mode-btn');
+    if(!btn) return;
+    [...el.modeGroup.children].forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.mode = parseInt(btn.dataset.mode, 10);
+    resetTest();
+  });
+
+  el.customToggle.addEventListener('click', () => {
+    el.customBox.classList.toggle('show');
+  });
+  el.applyCustom.addEventListener('click', () => {
+    const txt = el.customText.value.trim();
+    if(txt.length < 10) return;
+    state.customActive = true;
+    state.customText = txt;
+    el.customBox.classList.remove('show');
+    resetTest();
+  });
+
+  el.themeBtn.addEventListener('click', () => {
+    theme = theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    el.themeBtn.classList.toggle('active', theme === 'light');
+    saveJSON('tf_theme', theme);
+  });
+  el.soundBtn.addEventListener('click', () => {
+    state.soundOn = !state.soundOn;
+    el.soundBtn.classList.toggle('active', state.soundOn);
+    saveJSON('tf_sound', state.soundOn);
+  });
+
+  el.tryAgainBtn.addEventListener('click', () => resetTest());
+  el.closeBtn.addEventListener('click', () => el.overlay.classList.remove('show'));
+
+  document.addEventListener('keydown', (e) => {
+    if(document.activeElement !== el.hiddenInput && el.customBox.classList.contains('show') === false){
+      if(e.key === 'Tab'){ e.preventDefault(); resetTest(); }
+    }
+  });
+
+  // init
+  resetTest();
+})();
+</script>
+</body>
+</html>
