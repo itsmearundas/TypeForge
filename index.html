@@ -8,27 +8,31 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root[data-theme="dark"]{
-    --ink:#12151C;
-    --surface:#1B2029;
-    --surface-2:#232935;
-    --paper:#E8E6E0;
-    --paper-dim:#9AA0AC;
-    --brass:#C9A227;
-    --brass-dim:#8A7220;
-    --ribbon:#C1443B;
-    --line:#2E3542;
+    --ink:#0D1912;
+    --surface:#13211A;
+    --surface-2:#1B2C22;
+    --paper:#ECE9DE;
+    --paper-dim:#88998C;
+    --orange:#F2793A;
+    --orange-dim:#C75F27;
+    --violet:#A07BFF;
+    --violet-dim:#7C58DD;
+    --ribbon:#E1544A;
+    --line:#25392C;
     --shadow: 0 20px 60px rgba(0,0,0,0.45);
   }
   :root[data-theme="light"]{
-    --ink:#EDE9DF;
-    --surface:#FFFDF8;
-    --surface-2:#F5F0E4;
-    --paper:#1E1B14;
-    --paper-dim:#6B6455;
-    --brass:#8A6A12;
-    --brass-dim:#B8912A;
-    --ribbon:#A5342B;
-    --line:#DCD4C0;
+    --ink:#F1EEE0;
+    --surface:#FFFFFF;
+    --surface-2:#EAE5D2;
+    --paper:#132018;
+    --paper-dim:#5D6E61;
+    --orange:#CC5F1B;
+    --orange-dim:#A54B12;
+    --violet:#6C43D6;
+    --violet-dim:#5433AD;
+    --ribbon:#B2382F;
+    --line:#DAD3BB;
     --shadow: 0 20px 60px rgba(0,0,0,0.10);
   }
   *{box-sizing:border-box;}
@@ -61,7 +65,7 @@
     font-family:'JetBrains Mono', monospace;
     font-size:11px;
     letter-spacing:0.28em;
-    color:var(--brass);
+    color:var(--violet);
     text-transform:uppercase;
     margin-bottom:6px;
   }
@@ -70,7 +74,7 @@
     font-weight:700;
     letter-spacing:-0.02em;
   }
-  .brand-name span{color:var(--brass);}
+  .brand-name span{color:var(--orange);}
   .header-controls{display:flex; gap:10px;}
   .icon-btn{
     width:38px;height:38px;
@@ -83,8 +87,58 @@
     font-size:16px;
     transition:all .15s ease;
   }
-  .icon-btn:hover{border-color:var(--brass); color:var(--brass);}
-  .icon-btn.active{color:var(--brass); border-color:var(--brass);}
+  .icon-btn:hover{border-color:var(--violet); color:var(--violet);}
+  .icon-btn.active{color:var(--violet); border-color:var(--violet);}
+
+  .theme-picker{position:relative;}
+  .theme-panel{
+    display:none;
+    position:absolute;
+    top:46px; right:0;
+    width:308px;
+    max-height:360px;
+    overflow-y:auto;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:12px;
+    box-shadow:var(--shadow);
+    padding:12px;
+    z-index:60;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+  }
+  .theme-panel.show{display:grid;}
+  .theme-swatch{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    padding:8px 6px;
+    border-radius:8px;
+    border:1px solid transparent;
+    background:transparent;
+    cursor:pointer;
+    transition:all .12s ease;
+  }
+  .theme-swatch:hover{background:var(--surface-2);}
+  .theme-swatch.active{border-color:var(--orange); background:var(--surface-2);}
+  .swatch-dots{display:flex; gap:2px;}
+  .swatch-dots span{
+    width:14px; height:22px;
+    display:block;
+    border-radius:3px;
+  }
+  .swatch-dots span:first-child{border-radius:3px 0 0 3px;}
+  .swatch-dots span:last-child{border-radius:0 3px 3px 0;}
+  .swatch-name{
+    font-family:'JetBrains Mono', monospace;
+    font-size:9.5px;
+    letter-spacing:0.02em;
+    color:var(--paper-dim);
+    text-align:center;
+    line-height:1.2;
+  }
+  .theme-swatch.active .swatch-name{color:var(--paper); font-weight:600;}
 
   /* Controls row */
   .controls{
@@ -109,10 +163,11 @@
   }
   .mode-btn:hover{color:var(--paper);}
   .mode-btn.active{
-    background:var(--brass);
+    background:var(--orange);
     color:var(--ink);
-    border-color:var(--brass);
+    border-color:var(--orange);
     font-weight:600;
+    box-shadow:0 0 0 3px rgba(242,121,58,0.18);
   }
   .custom-toggle{
     font-family:'JetBrains Mono', monospace;
@@ -124,7 +179,7 @@
     text-underline-offset:3px;
     cursor:pointer;
   }
-  .custom-toggle:hover{color:var(--brass);}
+  .custom-toggle:hover{color:var(--violet);}
 
   .custom-box{display:none; margin-bottom:20px;}
   .custom-box.show{display:block;}
@@ -146,12 +201,12 @@
     font-size:12px;
     padding:8px 16px;
     border-radius:6px;
-    border:1px solid var(--brass);
+    border:1px solid var(--orange);
     background:transparent;
-    color:var(--brass);
+    color:var(--orange);
     cursor:pointer;
   }
-  .custom-box button:hover{background:var(--brass); color:var(--ink);}
+  .custom-box button:hover{background:var(--orange); color:var(--ink);}
 
   /* Type stage */
   .stage{
@@ -174,19 +229,29 @@
   }
   .caps-warning.show{display:block;}
 
+  .passage-viewport{
+    height:118px;
+    overflow:hidden;
+    position:relative;
+    -webkit-mask-image:linear-gradient(to bottom, transparent 0, #000 6%, #000 90%, transparent 100%);
+    mask-image:linear-gradient(to bottom, transparent 0, #000 6%, #000 90%, transparent 100%);
+  }
   .passage{
     font-family:'JetBrains Mono', monospace;
     font-size:22px;
     line-height:1.8;
     letter-spacing:0.01em;
     user-select:none;
+    white-space:normal;
+    word-wrap:break-word;
+    transition:transform .25s ease;
   }
   .passage span{position:relative;}
   .ch-pending{color:var(--paper-dim);}
   .ch-correct{color:var(--paper);}
   .ch-incorrect{color:var(--ribbon); text-decoration:underline; text-decoration-color:var(--ribbon);}
   .ch-current{
-    background:var(--brass);
+    background:var(--orange);
     color:var(--ink);
     border-radius:2px;
     animation:pulse 1s ease-in-out infinite;
@@ -245,7 +310,7 @@
     font-size:26px;
     font-weight:600;
   }
-  .ledger .value.accent{color:var(--brass);}
+  .ledger .value.accent{color:var(--orange);}
   .ledger .value.warn{color:var(--ribbon);}
 
   /* Results — strike sheet */
@@ -276,7 +341,7 @@
     position:absolute;
     top:0;left:0;right:0;
     height:6px;
-    background:repeating-linear-gradient(90deg, var(--brass) 0 10px, transparent 10px 20px);
+    background:repeating-linear-gradient(90deg, var(--orange) 0 10px, var(--violet) 10px 20px, transparent 20px 24px);
     border-radius:16px 16px 0 0;
   }
   .sheet-title{
@@ -284,7 +349,7 @@
     font-size:11px;
     letter-spacing:0.25em;
     text-transform:uppercase;
-    color:var(--brass-dim);
+    color:var(--violet);
     margin-bottom:4px;
   }
   .sheet-wpm{
@@ -301,7 +366,7 @@
     font-size:11px;
     letter-spacing:0.08em;
     color:var(--ink);
-    background:var(--brass);
+    background:var(--orange);
     padding:4px 10px;
     border-radius:20px;
     font-weight:700;
@@ -348,7 +413,7 @@
   }
   .btn-primary{
     flex:1;
-    background:var(--brass);
+    background:var(--orange);
     color:var(--ink);
     border:none;
     border-radius:8px;
@@ -359,7 +424,7 @@
     letter-spacing:0.04em;
     cursor:pointer;
   }
-  .btn-primary:hover{background:var(--brass-dim);}
+  .btn-primary:hover{background:var(--orange-dim);}
   .btn-ghost{
     background:transparent;
     color:var(--paper-dim);
@@ -398,7 +463,10 @@
     </div>
     <div class="header-controls">
       <button class="icon-btn" id="soundBtn" title="Toggle keystroke sound">♪</button>
-      <button class="icon-btn" id="themeBtn" title="Toggle theme">◐</button>
+      <div class="theme-picker">
+        <button class="icon-btn" id="themeBtn" title="Choose a theme">🎨</button>
+        <div class="theme-panel" id="themePanel"></div>
+      </div>
     </div>
   </header>
 
@@ -419,7 +487,9 @@
 
   <div class="stage">
     <div class="caps-warning" id="capsWarning">CAPS LOCK ON</div>
-    <div class="passage mono" id="passage"></div>
+    <div class="passage-viewport">
+      <div class="passage mono" id="passage"></div>
+    </div>
     <input class="hidden-input" id="hiddenInput" autocomplete="off" autocapitalize="off" spellcheck="false">
     <div class="stage-hint">Just start typing to begin · <kbd>Tab</kbd> or <kbd>Enter</kbd> to restart</div>
   </div>
@@ -454,7 +524,7 @@
     <div class="sheet-grid">
       <div class="cell"><div class="label">Accuracy</div><div class="value" id="resultAcc">0%</div></div>
       <div class="cell"><div class="label">Mistakes</div><div class="value" id="resultMistakes">0</div></div>
-      <div class="cell"><div class="label">Consistency</div><div class="value" id="resultConsistency">0%</div></div>
+      <div class="cell"><div class="label">Consistency</div><div class="value" id="resultConsistency" style="color:var(--violet)">0%</div></div>
       <div class="cell"><div class="label">Characters</div><div class="value" id="resultChars">0</div></div>
       <div class="cell"><div class="label">Duration</div><div class="value" id="resultDuration">0s</div></div>
       <div class="cell"><div class="label">Best WPM</div><div class="value" id="resultBest">0</div></div>
@@ -529,6 +599,7 @@
     chartSvg: document.getElementById('chartSvg'),
     historyBody: document.getElementById('historyBody'),
     themeBtn: document.getElementById('themeBtn'),
+    themePanel: document.getElementById('themePanel'),
     soundBtn: document.getElementById('soundBtn'),
     customToggle: document.getElementById('customToggle'),
     customBox: document.getElementById('customBox'),
@@ -540,7 +611,57 @@
     stage: document.querySelector('.stage')
   };
 
-  // ---------- storage ----------
+  // ---------- theme palettes ----------
+  const CLASSIC_THEMES = {
+    'classic-dark': { name:'Classic Dark', mode:'dark', swatches:['#F2793A','#A07BFF','#0D1912'] },
+    'classic-light': { name:'Classic Light', mode:'light', swatches:['#CC5F1B','#6C43D6','#F1EEE0'] }
+  };
+
+  const THEMES = {
+    meadow: {name:'Meadow', mode:'dark', ink:'#081408', surface:'#0E250E', surface2:'#153515', paper:'#EDEEED', paperDim:'#82A682', orange:'#8FEA52', orangeDim:'#67DA1B', violet:'#DEF372', violetDim:'#CEEE2B', ribbon:'#E1544A', line:'#234E23', swatches:['#499A13','#BBDC12','#276F27']},
+    cobalt: {name:'Cobalt Bloom', mode:'dark', ink:'#02081A', surface:'#040E2F', surface2:'#061543', paper:'#ECEDEE', paperDim:'#7282B6', orange:'#3D84FF', orangeDim:'#005AF5', violet:'#DD66FF', violetDim:'#CB1AFF', ribbon:'#E1544A', line:'#0F2261', swatches:['#5996FF','#F4CEFF','#1B4EF5']},
+    moonlit_teal: {name:'Moonlit Teal', mode:'dark', ink:'#0C110F', surface:'#151E1C', surface2:'#1E2C29', paper:'#EDEDED', paperDim:'#8C9B98', orange:'#69D3C0', orangeDim:'#37BEA5', violet:'#8087E5', violetDim:'#404AD8', ribbon:'#E1544A', line:'#2F413D', swatches:['#408175','#B5B9F0','#2E4540']},
+    deep_current: {name:'Deep Current', mode:'dark', ink:'#0B0F11', surface:'#141B1F', surface2:'#1D272D', paper:'#EDEDED', paperDim:'#8B979D', orange:'#67A9D6', orangeDim:'#3488C0', violet:'#70C0F5', violetDim:'#29A1EF', ribbon:'#E1544A', line:'#2D3B43', swatches:['#3282B8','#BBE1FA','#1B262C']},
+    neon_circuit: {name:'Neon Circuit', mode:'dark', ink:'#0C0B11', surface:'#16141F', surface2:'#201D2D', paper:'#EDEDED', paperDim:'#8F8A9D', orange:'#E6FF3D', orangeDim:'#D5F500', violet:'#8D66FF', violetDim:'#541AFF', ribbon:'#E1544A', line:'#322D43', swatches:['#E4FF30','#5B23FF','#362F4F']},
+    magenta_ember: {name:'Magenta Ember', mode:'dark', ink:'#180417', surface:'#2B0829', surface2:'#3F0B3C', paper:'#EEECEE', paperDim:'#B177AD', orange:'#FFC43D', orangeDim:'#F5AB00', violet:'#F1749D', violetDim:'#EA2F6C', ribbon:'#E1544A', line:'#5B1657', swatches:['#FFB200','#D91656','#640D5F']},
+    midnight_blaze: {name:'Midnight Blaze', mode:'dark', ink:'#040718', surface:'#080D2B', surface2:'#0B133F', paper:'#ECEDEE', paperDim:'#7780B1', orange:'#F67F46', orangeDim:'#E9530B', violet:'#7E90E7', violetDim:'#3E58DB', ribbon:'#E1544A', line:'#16205B', swatches:['#F68048','#2845D6','#0D1A63']},
+    orchid_bloom: {name:'Orchid Bloom', mode:'dark', ink:'#0C0814', surface:'#160F24', surface2:'#1F1535', paper:'#EDEDEE', paperDim:'#8D82A6', orange:'#FF3DA8', orangeDim:'#F50087', violet:'#E184BE', violetDim:'#D2469D', ribbon:'#E1544A', line:'#30234E', swatches:['#FF70BF','#D552A3','#462C7D']},
+    pine_noir: {name:'Pine Noir', mode:'dark', ink:'#011B13', surface:'#033023', surface2:'#044633', paper:'#ECEEEE', paperDim:'#6EB9A4', orange:'#3DFFE5', orangeDim:'#00F5D5', violet:'#90A9D5', violetDim:'#597DC0', ribbon:'#E1544A', line:'#0B654B', swatches:['#008170','#232D3F','#005B41']},
+    glacier: {name:'Glacier', mode:'light', ink:'#E5FAFA', surface:'#FFFFFF', surface2:'#D4F7F7', paper:'#004747', paperDim:'#3D9A9A', orange:'#32A7AE', orangeDim:'#278186', violet:'#2899A4', violetDim:'#1E727B', ribbon:'#B2382F', line:'#A4F4F4', swatches:['#71C9CE','#A6E3E9','#E3FDFD']},
+    petal_mint: {name:'Petal Mint', mode:'light', ink:'#E7F9EA', surface:'#FFFFFF', surface2:'#D7F4DC', paper:'#054310', paperDim:'#449253', orange:'#6F71B2', orangeDim:'#595A8F', violet:'#658394', violetDim:'#506875', ribbon:'#B2382F', line:'#ABEDB7', swatches:['#9FA1FF','#AEE2FF','#D9F9DF']},
+    sunset_warm: {name:'Sunset Warm', mode:'light', ink:'#FCF4E3', surface:'#FFFFFF', surface2:'#FAECD1', paper:'#472F00', paperDim:'#A17C36', orange:'#CB3316', orangeDim:'#9D2811', violet:'#CC5800', violetDim:'#994200', ribbon:'#B2382F', line:'#FADA9E', swatches:['#E73F1E','#FB6C00','#FFDD9C']}
+  };
+
+  const VAR_MAP = {ink:'--ink', surface:'--surface', surface2:'--surface-2', paper:'--paper', paperDim:'--paper-dim', orange:'--orange', orangeDim:'--orange-dim', violet:'--violet', violetDim:'--violet-dim', ribbon:'--ribbon', line:'--line'};
+
+  function applyTheme(id){
+    const root = document.documentElement;
+    if(CLASSIC_THEMES[id]){
+      Object.values(VAR_MAP).forEach(v => root.style.removeProperty(v));
+      root.setAttribute('data-theme', CLASSIC_THEMES[id].mode);
+    } else if(THEMES[id]){
+      const t = THEMES[id];
+      root.setAttribute('data-theme', t.mode);
+      Object.keys(VAR_MAP).forEach(key => root.style.setProperty(VAR_MAP[key], t[key]));
+    } else {
+      return applyTheme('classic-dark');
+    }
+    theme = id;
+    saveJSON('tf_theme_id', id);
+    renderThemePanel();
+  }
+
+  function renderThemePanel(){
+    const all = Object.assign({}, CLASSIC_THEMES, THEMES);
+    el.themePanel.innerHTML = Object.entries(all).map(([id, t]) => `
+      <button class="theme-swatch ${id===theme ? 'active':''}" data-theme-id="${id}" title="${t.name}">
+        <span class="swatch-dots">${t.swatches.map(c=>`<span style="background:${c}"></span>`).join('')}</span>
+        <span class="swatch-name">${t.name}</span>
+      </button>
+    `).join('');
+  }
+
+
   function loadJSON(key, fallback){
     try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
     catch(e){ return fallback; }
@@ -551,11 +672,10 @@
 
   let bestWpm = loadJSON('tf_best', 0);
   let history = loadJSON('tf_history', []);
-  let theme = loadJSON('tf_theme', 'dark');
+  let theme = loadJSON('tf_theme_id', 'classic-dark');
   let soundOn = loadJSON('tf_sound', false);
 
-  document.documentElement.setAttribute('data-theme', theme);
-  el.themeBtn.classList.toggle('active', theme === 'light');
+  applyTheme(theme);
   state.soundOn = soundOn;
   el.soundBtn.classList.toggle('active', soundOn);
 
@@ -582,6 +702,13 @@
     return PASSAGES[Math.floor(Math.random()*PASSAGES.length)];
   }
 
+  function escapeHtml(ch){
+    if(ch === '&') return '&amp;';
+    if(ch === '<') return '&lt;';
+    if(ch === '>') return '&gt;';
+    return ch;
+  }
+
   function renderPassage(){
     el.passage.innerHTML = state.text.split('').map((ch, i) => {
       let cls = 'ch-pending';
@@ -590,9 +717,18 @@
       } else if(i === state.idx){
         cls = 'ch-current';
       }
-      const display = ch === ' ' ? '&nbsp;' : ch;
-      return `<span class="${cls}">${display}</span>`;
+      return `<span class="${cls}">${escapeHtml(ch)}</span>`;
     }).join('');
+    scrollPassageIntoView();
+  }
+
+  function scrollPassageIntoView(){
+    const current = el.passage.querySelector('.ch-current') ||
+                     el.passage.querySelectorAll('span')[el.passage.querySelectorAll('span').length - 1];
+    if(!current) { el.passage.style.transform = 'translateY(0)'; return; }
+    const lineHeight = parseFloat(getComputedStyle(el.passage).lineHeight);
+    const scrollAmount = Math.max(0, current.offsetTop - lineHeight);
+    el.passage.style.transform = `translateY(-${scrollAmount}px)`;
   }
 
   function resetTest(keepMode){
@@ -707,10 +843,24 @@
     }).join(' ');
 
     const ns = "http://www.w3.org/2000/svg";
+
+    const defs = document.createElementNS(ns,'defs');
+    const grad = document.createElementNS(ns,'linearGradient');
+    grad.setAttribute('id','wpmGradient');
+    grad.setAttribute('x1','0'); grad.setAttribute('y1','0');
+    grad.setAttribute('x2','1'); grad.setAttribute('y2','0');
+    const stop1 = document.createElementNS(ns,'stop');
+    stop1.setAttribute('offset','0%'); stop1.setAttribute('stop-color','var(--violet)');
+    const stop2 = document.createElementNS(ns,'stop');
+    stop2.setAttribute('offset','100%'); stop2.setAttribute('stop-color','var(--orange)');
+    grad.appendChild(stop1); grad.appendChild(stop2);
+    defs.appendChild(grad);
+    svg.appendChild(defs);
+
     const poly = document.createElementNS(ns,'polyline');
     poly.setAttribute('points', points);
     poly.setAttribute('fill','none');
-    poly.setAttribute('stroke','var(--brass)');
+    poly.setAttribute('stroke','url(#wpmGradient)');
     poly.setAttribute('stroke-width','2.5');
     poly.setAttribute('stroke-linejoin','round');
     poly.setAttribute('stroke-linecap','round');
@@ -718,8 +868,8 @@
 
     const fillPoly = document.createElementNS(ns,'polygon');
     fillPoly.setAttribute('points', `${pad},${h-pad} ${points} ${w-pad},${h-pad}`);
-    fillPoly.setAttribute('fill','var(--brass)');
-    fillPoly.setAttribute('opacity','0.08');
+    fillPoly.setAttribute('fill','url(#wpmGradient)');
+    fillPoly.setAttribute('opacity','0.10');
     svg.insertBefore(fillPoly, poly);
   }
 
@@ -803,11 +953,18 @@
     resetTest();
   });
 
-  el.themeBtn.addEventListener('click', () => {
-    theme = theme === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', theme);
-    el.themeBtn.classList.toggle('active', theme === 'light');
-    saveJSON('tf_theme', theme);
+  el.themeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    el.themePanel.classList.toggle('show');
+  });
+  el.themePanel.addEventListener('click', (e) => {
+    const btn = e.target.closest('.theme-swatch');
+    if(!btn) return;
+    applyTheme(btn.dataset.themeId);
+    el.themePanel.classList.remove('show');
+  });
+  document.addEventListener('click', (e) => {
+    if(!e.target.closest('.theme-picker')) el.themePanel.classList.remove('show');
   });
   el.soundBtn.addEventListener('click', () => {
     state.soundOn = !state.soundOn;
